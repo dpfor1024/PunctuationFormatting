@@ -13,7 +13,7 @@
 暴力排序
 首先我们要把字符串分割来看。
 
-![image](images/3.gif)
+![image](https://github.com/dpfor1024/PunctuationFormatting/blob/main/images/3.gif)
 
 那么通常情况下，Text应该是这样排列的
 
@@ -24,6 +24,26 @@
 再判断这个字是不是标点符号，是的话就把它和它前面的一个字拿到另一行。
 就像这样
 
-![image](images/2.gif)
+![image](https://github.com/dpfor1024/PunctuationFormatting/blob/main/images/2.gif)
 
 那么这样就简单地实现了句首标点符号的处理方法
+
+# 注意
+
+没有加空格的判断，所以文本中尽量不要出现空格
+
+代码我加了对齐方式的判断
+目前处理的是这两种对齐方式的对象
+![image](images/2.png)
+![image](images/3.png)
+
+Text组件的父对象的对齐方式要是这种
+![image](images/4.png)
+
+**使用方法**
+通过Text组件调用
+![image](images/5.png)
+
+但是这个代码现在还有个缺陷，那就是经过处理的文本有时候会长短不一，看起来有点丑
+![image](images/6.png)
+但是大部分情况下应该够用了
