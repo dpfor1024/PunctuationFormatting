@@ -17,7 +17,7 @@
 
 那么通常情况下，Text应该是这样排列的
 
-![image](images/1.gif)
+![image](https://github.com/dpfor1024/PunctuationFormatting/blob/main/images/1.gif)
 
 相当于先获取到Text文本框的宽度，再获取到当前文本所占的宽（不同汉字的像素宽是不同的，所以没办法准确的获取一个汉字的宽）。
 再进行判断，当放到某个字时文本的宽度超出了文本框的宽度，那么就说明这个字是要换行的。
