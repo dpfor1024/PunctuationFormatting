@@ -50,3 +50,8 @@ Text组件的父对象的对齐方式要是这种<br/>
 
 不知道我的方法性能开销大不大，本人是Unity新手，如果有改进的地方欢迎提出来！！<br/>
 其实应该还有另外的解决方案，比如TextMeshPro，感兴趣的小伙伴可以研究一下。<br/>
+
+# Demo
+
+[示例](https://github.com/dpfor1024/PunctuationFormatting/blob/main/demo.unitypackage) <br/>
+[CSDN](https://blog.csdn.net/qq_49152649/article/details/129605224)
