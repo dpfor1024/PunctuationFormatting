@@ -1,4 +1,5 @@
-﻿using System;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityGameObject;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,17 +7,53 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 字符串标点符号格式化
+/// 字符串标点符号格式化，以下代码为最新版本
 /// </summary>
 public static class StringPunctuationFormatting
 {
     static List<string> punctuations = new List<string> {
-        "，",
-        "！",
-        "。",
-        "？",
-        "~"
+        "，",    ",",
+        "！",    "!",
+        "。",    ".",
+        "？",    "?",
+        "~",
+        "+",    "-",    "*",    "/",
+        "《",    "<",
+        "》",    ">",
+        "、",    @"\",
+        ":",    "：",
+        ";",    "；",
+        "“",    "\'",
+        "”",    "‘",    "’",
+
     };
+
+    static IEnumerator FrameEnumerator(Text TextComponent)
+    {
+        yield return new WaitUntil(() => Alignment(TextComponent.transform) != 0);
+        PunctuationFormat(TextComponent);
+
+        //while (true)
+        //{
+        //    float result = Alignment(TextComponent.transform);
+        //    if (result != 0)
+        //    {
+        //        PunctuationFormat(TextComponent);
+        //        yield break;
+        //    }
+        //    yield return null;
+        //}
+
+    }
+
+    /// <summary>
+    /// 延迟执行标点符号处理
+    /// </summary>
+    public static void LateFramePunctuationFormat(this Text TextComponent)
+    {
+        TextComponent.StartCoroutine(FrameEnumerator(TextComponent));       
+    }
+
 
     /// <summary>
     /// 标点符号格式化
@@ -24,8 +61,9 @@ public static class StringPunctuationFormatting
     /// <param name="TextComponent">文本组件</param>
     public static void PunctuationFormat(this Text TextComponent)
     {
+        //Debug.LogError("执行处理");
         string text = TextComponent.text;
-        if (text == "" || text.Length == 0 || text == string.Empty)
+        if ( text == string.Empty || text == "" || text.Length == 0)
         {
             Debug.LogError("字符串为空");
             return;
@@ -43,22 +81,24 @@ public static class StringPunctuationFormatting
         float width;
         foreach (var item in charList)
         {
-            str += item;
+            str += item;//当前组合的字符
             TextComponent.text = str;
             width = generator.GetPreferredWidth(TextComponent.text, settings) / settings.scaleFactor;//当前文本宽度
             if (width > boundWidth)//说明这次添加的字导致了换行
             {
-                string line;//一行字
+                string line;//处理好的一行字
                 if (isPunctuation(item))//判断是否为标点
                 {
                     line = str.Substring(0, str.Length - 2);//将最后一个字拿给下一行
-                    str = "\n" + str.Substring(str.Length - 2, 2);
+                    str = str.Substring(str.Length - 2, 2);
                 }
                 else
                 {
                     line = str.Substring(0, str.Length - 1);
-                    str = "\n" + str.Substring(str.Length - 1, 1);
+                    str = str.Substring(str.Length - 1, 1);
                 }
+                //再次判断最后一个字是否为标点
+                lastOneIsPun(ref line, ref str);
                 stringList.Add(line);
             }
 
@@ -69,15 +109,45 @@ public static class StringPunctuationFormatting
                 stringList.Add(str);
             }
         }
-        string endstring = string.Empty;
-        foreach (var item in stringList)
+        
+        //以下处理单字不成行
+        if (stringList.Count > 1 && stringList[stringList.Count - 1].Length <= 3) //判断最后一行字数，如果是单字的话
         {
-            //Debug.LogError(item);
-            endstring += item;
+            Debug.LogError("单子不成行");
+            string newLine= stringList[stringList.Count - 2].Substring(0, stringList[stringList.Count - 2].Length - 1);
+            string x= stringList[stringList.Count - 2].Substring(stringList[stringList.Count - 2].Length - 1, 1);//上一行的最后一个字
+            stringList[stringList.Count - 2] = newLine;//删去一个字的新行
+            stringList[stringList.Count - 1]=stringList[stringList.Count - 1].Insert(1, x);//添加给新一行
         }
+        
+        string endstring = string.Empty;
+        for (int i = 0; i < stringList.Count; i++)
+        {
+            endstring += stringList[i];            
+
+        }
+        //foreach (var item in stringList)
+        //{
+        //    Debug.LogError(item);
+        //    endstring += item;
+        //}
         TextComponent.text = endstring;
     }
-
+    /// <summary>
+    /// 判断最后一个字是否为标点
+    /// </summary>
+    /// <returns></returns>
+    static void lastOneIsPun(ref string line, ref string str)
+    {
+        if (isPunctuation(str[0].ToString()))//如果第一个字是标点
+        {
+            str = line.Substring(line.Length - 1, 1) + str;
+            line = line.Substring(0, line.Length - 1);
+            lastOneIsPun(ref line, ref str);
+            return;
+        }
+        str = "\n" + str;
+    }
     static bool isPunctuation(string item)
     {
         foreach (var pun in punctuations)
@@ -89,22 +159,16 @@ public static class StringPunctuationFormatting
     }
 
     /// <summary>
-    /// 判断对齐方式
+    /// 获取文本框的宽
     /// </summary>
     /// <param name="transform"></param>
     /// <returns>文本框宽度</returns>
     static float Alignment(Transform transform)
     {
-        RectTransform rectTransform = transform.GetComponent<RectTransform>();
-        if (rectTransform.anchorMax == Vector2.one && rectTransform.anchorMin == Vector2.zero)
-        {
-            return rectTransform.sizeDelta.x + transform.parent.transform.GetComponent<RectTransform>().sizeDelta.x;
-        }
-        if (rectTransform.anchorMax == new Vector2(0.5f, 0.5f) && rectTransform.anchorMin == new Vector2(0.5f, 0.5f))
-        {
+        RectTransform rectTransform = transform.GetComponent<RectTransform>();        
+        Debug.LogError(rectTransform.sizeDelta.x);
             return rectTransform.sizeDelta.x;
-        }
-        throw new Exception("对齐方式未知");        
+
     }
 
     /// <summary>
@@ -155,3 +219,7 @@ public static class StringPunctuationFormatting
     }
 
 }
+
+
+
+
